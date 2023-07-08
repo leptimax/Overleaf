@@ -1,0 +1,60 @@
+version: '2.2'
+services:
+    sharelatex:
+        restart: always
+        image: sharelatex/sharelatex:4.0.2-full
+        container_name: sharelatex
+        depends_on:
+            mongo:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        ports:
+            - 80:80
+        links:
+            - mongo
+            - redis
+        stop_grace_period: 60s
+        volumes:
+            - ./data/sharelatex:/var/lib/sharelatex
+        environment:
+
+          SHARELATEX_APP_NAME: "${SHARELATEX_APP_NAME}"
+          ENABLED_LINKED_FILE_TYPES: "${ENABLED_LINKED_FILE_TYPES}"
+          ENABLE_CONVERSIONS: "${ENABLE_CONVERSIONS}"
+          EMAIL_CONFIRMATION_DISABLED: "${EMAIL_CONFIRMATION_DISABLED}"
+          TEXMFVAR: "${TEXMFVAR}"
+          REDIS_HOST: "${REDIS_HOST}"
+          REDIS_PORT: "${REDIS_PORT}"
+          SHARELATEX_MONGO_URL: "${MONGO_URL}"
+          SHARELATEX_REDIS_HOST: "${REDIS_HOST}"
+          V1_HISTORY_URL: "http://sharelatex:3100/api"
+        env_file:
+            - .env
+
+    mongo:
+        restart: always
+        image: mongo:4.4
+        container_name: mongo
+        command: "--replSet overleaf"
+        expose:
+            - 27017
+        volumes:
+            - ./data/mongo:/data/db
+        healthcheck:
+            test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+            interval: 10s
+            timeout: 10s
+            retries: 5
+
+    redis:
+        restart: always
+        image: redis:6.2
+        container_name: redis
+        expose:
+            - 6379
+        volumes:
+            - ./data/redis:/data
+
+
+
