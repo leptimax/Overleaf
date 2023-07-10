@@ -7,7 +7,7 @@ This repository contains the overleaf Toolkik, the standard tools for running a 
 Clone this repository locally:
 
 ```sh
-git clone 
+git clone https://github.com/leptimax/Overleaf.git
 ```
 
 1. Initiate Configuration
